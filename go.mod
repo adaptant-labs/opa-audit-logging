@@ -8,5 +8,7 @@ require (
 	github.com/open-policy-agent/opa v0.17.1
 	github.com/prometheus/client_golang v0.0.0-20181025174421-f30f42803563
 	github.com/prometheus/common v0.0.0-20181020173914-7e9e6cabbd39
-	github.com/sirupsen/logrus v1.4.1
+	github.com/sirupsen/logrus v1.4.2
+	github.com/urfave/cli/v2 v2.1.1
+	go.mongodb.org/mongo-driver v1.3.0
 )
