@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
 	opalogs "github.com/open-policy-agent/opa/plugins/logs"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -52,6 +55,7 @@ type MongoDecisionModel struct {
 	ID        string          `json:"_id,omitempty" bson:"_id"`
 	Partition string          `json:"partition,omitempty" bson:"partition,omitempty"`
 	Decision  opalogs.EventV1 `json:"decision" bson:"decision"`
+	Hash      string          `json:"hash" bson:"hash"`
 }
 
 func (mds MongoDataService) AddDecisionToPartition(partition string, decision opalogs.EventV1) error {
@@ -61,11 +65,18 @@ func (mds MongoDataService) AddDecisionToPartition(partition string, decision op
 	mdm.ID = decision.DecisionID
 	mdm.Decision = decision
 
+	hash, err := mds.HashDecision(decision)
+	if err != nil {
+		return err
+	}
+
+	mdm.Hash = hash
+
 	if len(partition) > 0 {
 		mdm.Partition = partition
 	}
 
-	_, err := mds.decisions.InsertOne(context.Background(), mdm)
+	_, err = mds.decisions.InsertOne(context.Background(), mdm)
 	if err != nil {
 		return err
 	}
@@ -75,6 +86,16 @@ func (mds MongoDataService) AddDecisionToPartition(partition string, decision op
 
 func (mds MongoDataService) AddDecision(decision opalogs.EventV1) error {
 	return mds.AddDecisionToPartition("", decision)
+}
+
+func (mds MongoDataService) HashDecision(decision opalogs.EventV1) (string, error) {
+	data, err := json.Marshal(decision)
+	if err != nil {
+		return "", err
+	}
+
+	hash := sha256.Sum256(data)
+	return fmt.Sprintf("%x", hash[:]), nil
 }
 
 func NewMongoDataService() AuditLoggingDataService {
