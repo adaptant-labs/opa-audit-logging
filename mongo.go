@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"github.com/minio/sha256-simd"
 	opalogs "github.com/open-policy-agent/opa/plugins/logs"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
